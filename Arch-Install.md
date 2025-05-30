@@ -232,6 +232,7 @@ Verifying file database and EFI images in /efi...
 ✓ /efi/EFI/BOOT/BOOTX64.EFI is signed
 ✓ /efi/EFI/Linux/arch-linux.efi is signed
 ✓ /efi/EFI/systemd/systemd-bootx64.efi is signed
+[root@archlinux ~]# reboot
 ```
 
 After the efi files have been signed, use systemctl-cryptenroll to enroll the TPM2 token to unlock the computer on boot. This allows the computer to boot without a password as long as the disk is not removed from the system and the TPM2 has not tampered with. Then create a recovery-key that can be used to unlock the system in the event that something *does* modify the TPM2. Save this away in a safe place. Once we delete the password originally saved in keyslot 2 this will be the only way to rescue the system if the auto-unlock stops working. Reboot the computer to verify that the auto-unlock works as expected.  
