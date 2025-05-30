@@ -119,6 +119,8 @@ root@archiso ~ # arch-chroot /mnt
 New password: 
 Retype new password: 
 passwd: password updated successfully
+[root@archiso /]# pacman-key --init
+[root@archiso /]# pacman-key --populate archlinux
 [root@archiso /]# pacman -S vim networkmanager btrfs-progs
 [root@archiso /]# pacman -S linux linux-firmware
 [root@archiso /]# bootctl install
