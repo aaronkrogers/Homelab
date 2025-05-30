@@ -1,6 +1,6 @@
 # Encrypted Arch Linux Install (Proxmox)
 ## Create the Proxmox VM
-Create a new Proxmox VM using the Arch Linux ISO. In the System Tab, select "OVMF (UEFI)" as the BIOS type and check the "Add TPM" box. Each of these options will expect a storage location and local-lvm should work for that as long as there is enough space. Other settings can be left with default values or changed depending on your specific needs.  
+Create a new Proxmox VM using the Arch Linux ISO. In the System Tab, select "OVMF (UEFI)" as the BIOS type and check the "Add TPM" box. Each of these options will expect a storage location and local-lvm should work for that as long as there is enough space. Also **deselect** the pre-enrolled keys option in order to boot the iso image. Other settings can be left with default values or changed depending on your specific needs.  
 ![alt text](screenshots/system-setup.png)
 
 ## Boot from the Arch Linux ISO
