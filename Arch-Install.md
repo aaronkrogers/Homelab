@@ -5,7 +5,7 @@ Create a new Proxmox VM using the Arch Linux ISO. In the System Tab, select "OVM
 
 ## Boot from the Arch Linux ISO
 ### Partition the Disks
-Use fdisk -l to list the system's disks. In this case I will be installed Archlinux on /dev/sda. Be sure to replace /dev/sda with the correct disk in all commands in which it appears.
+Use fdisk -l to list the system's disks. In this case it will be installed on /dev/sda. Be sure to replace /dev/sda with the correct disk in all commands in which it appears.
 ```console
 root@archiso ~ # fdisk -l   
 Disk /dev/sda: 32 GiB, 34359738368 bytes, 67108864 sectors
