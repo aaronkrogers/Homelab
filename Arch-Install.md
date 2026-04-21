@@ -21,7 +21,7 @@ Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes
 ```
 
-Use fdisk to craeat a disklabel and partition the disk.
+Use fdisk to create a disklabel and partition the disk.
 - Create a GPT disklabel (required for UEFI)
 - Create a new 128Mb partition for EFI (type 1 = EFI)
 - Create a new partition for system root
@@ -198,42 +198,38 @@ lo                  6257edb0-bcb1-40fc-af90-8aae09bf1520  loopback  lo
 ```
 
 ### Enable Secure Boot and Automatic Unlocking on Boot with TPM2
-The next few steps implement secureboot by creating keys and registering them with the computer's UEFI firmware with sbctl. Once the keys are generated, sign each of the system's efi files using the -s flag to remeber the files for later signing with sbctl sign-all.  
-[Arch Linux Wiki - Assisted process with sbctl](https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot#Assisted_process_with_sbctl)
+The next few steps implement secureboot by creating keys and registering them with the computer's UEFI firmware with systemd-ukify.
+[Arch Linux Wiki - Assisted process with systemd](https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot#Assisted_process_with_systemd)
 
-**Note:** sbctl will warn that omitting the Microsoft signature might brick the machine. Since I am performing this install in a Proxmox virtual environment, I will ignore this warning and proceed without the Microsoft signatures. On a physical device install it would probably be safer to run sbctl enroll-keys with the --microsoft flag.
 ```console
-root@archiso ~ # pacman -S sbctl
-root@archiso ~ # sbctl create-keys
-Created Owner UUID XXXXXX
-Creating secure boot keys...
-Secure book keys created!
-[root@archlinux ~]# sbctl enroll-keys
-Found OptionROM in the bootchain. This means we should not enroll keys into UEFI without some precautions.
-
-There are three flags that can be used:
-    --microsoft: Enroll the Microsoft OEM certificates into the signature database.
-    --tpm-eventlog: Enroll OpRom checksums into the signature database (experimental!).
-    --yes-this-might-brick-my-machine: Ignore this warning and continue regardless.
-
-Please read the FAQ for more information: https://github.com/Foxboron/sbctl/wiki/FAQ#option-rom
-[root@archlinux ~]# sbctl enroll-keys --yes-this-might-brick-my-machine
-Enrolling keys to EFI variables...✓ 
-Enrolled keys to the EFI variables!
-[root@archlinux ~]# find /efi/EFI/ -iname '*.efi'
-/efi/EFI/systemd/systemd-bootx64.efi
-/efi/EFI/BOOT/BOOTX64.EFI
-/efi/EFI/Linux/arch-linux.efi
-[root@archlinux ~]# sbctl sign -s /efi/EFI/systemd/systemd-bootx64.efi
-[root@archlinux ~]# sbctl sign -s /efi/EFI/BOOT/BOOTX64.EFI
-[root@archlinux ~]# sbctl sign -s /efi/EFI/Linux/arch-linux.efi
-[root@archlinux ~]# sbctl verify
-Verifying file database and EFI images in /efi...
-✓ /efi/EFI/BOOT/BOOTX64.EFI is signed
-✓ /efi/EFI/Linux/arch-linux.efi is signed
-✓ /efi/EFI/systemd/systemd-bootx64.efi is signed
-[root@archlinux ~]# reboot
+root@archiso ~ # pacman -S systemd-ukify
+root@archiso ~ # cp /usr/lib/kernel/uki.conf /etc/kernel/uki.conf
 ```
+Edit /etc/kernel/uki.conf to uncomment and edit the following lines
+```
+[UKI]
+SecureBootSigningTool=systemd-sbsign
+SecureBootPrivateKey=/etc/kernel/secure-boot-private-key.pem
+SecureBootCertificate=/etc/kernel/secure-boot-certificate.pem
+SignKernel=true
+```
+Generate the new keys and sign the bootloader
+```console
+[root@archlinux ~]# ukify genkey /etc/kernel/uki.conf
+[root@archlinux ~]# /usr/lib/systemd/systemd-sbsign sign \
+--private-key /etc/kernel/secure-boot-private-key.pem \
+--certificate /etc/kernel/secure-boot-certificate.pem \
+--output /usr/lib/systemd/boot/efi/systemd-bootx64.efi.signed \
+/usr/lib/systemd/boot/efi/systemd-bootx64.efi
+```
+Set `secure-boot-enroll force` to enroll keys and reboot
+```console
+[root@archlinux ~]# # bootctl install --secure-boot-auto-enroll yes \
+--certificate /etc/kernel/secure-boot-certificate.pem \
+--private-key /etc/kernel/secure-boot-private-key.pem
+[root@archlinux ~]# echo 'secure-boot-enroll force' >> /efi/loader/loader.conf
+[root@archlinux ~]# reboot
+
 
 After the efi files have been signed, use systemctl-cryptenroll to enroll the TPM2 token to unlock the computer on boot. This allows the computer to boot without a password as long as the disk is not removed from the system and the TPM2 has not tampered with. Then create a recovery-key that can be used to unlock the system in the event that something *does* modify the TPM2. Save this away in a safe place. Once we delete the password originally saved in keyslot 2 this will be the only way to rescue the system if the auto-unlock stops working. Reboot the computer to verify that the auto-unlock works as expected.  
 [Arch Linux Wiki - Trusted Platform Module](https://wiki.archlinux.org/title/Systemd-cryptenroll#Trusted_Platform_Module)
