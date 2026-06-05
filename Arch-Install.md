@@ -160,7 +160,7 @@ rootflags=x-systemd.device-timeout=0
 
 ```console
 [root@archiso /]# uuid=$(blkid /dev/sda2 | grep -o ' UUID=[^ ]*' | tr -d ' "')
-[root@archiso /]# cat > /etc/crypttab.initramfs <<EOF
+[root@archiso /]# tee /etc/crypttab.initramfs <<EOF
 system ${uuid} none timeout=0
 EOF
 ```
