@@ -215,7 +215,7 @@ SignKernel=true
 ```
 Generate the new keys and sign the bootloader
 ```console
-[root@archlinux ~]# ukify genkey /etc/kernel/uki.conf
+[root@archlinux ~]# ukify genkey -c /etc/kernel/uki.conf
 [root@archlinux ~]# /usr/lib/systemd/systemd-sbsign sign \
 --private-key /etc/kernel/secure-boot-private-key.pem \
 --certificate /etc/kernel/secure-boot-certificate.pem \
