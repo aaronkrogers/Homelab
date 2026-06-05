@@ -113,7 +113,7 @@ root@archiso ~ # mount -o fmask=0077,dmask=0077 /dev/sda1 /mnt/efi
 ```console
 root@archiso ~ # pacstrap /mnt base base-devel
 ...
-root@archiso ~ # genfstab -pU /mnt >> /mnt/etc/fstab
+root@archiso ~ # genfstab -pU /mnt | tee -a /mnt/etc/fstab
 root@archiso ~ # arch-chroot /mnt
 [root@archiso /]# passwd
 New password: 
@@ -227,7 +227,7 @@ Set `secure-boot-enroll force` to enroll keys and reboot
 [root@archlinux ~]# # bootctl install --secure-boot-auto-enroll yes \
 --certificate /etc/kernel/secure-boot-certificate.pem \
 --private-key /etc/kernel/secure-boot-private-key.pem
-[root@archlinux ~]# echo 'secure-boot-enroll force' >> /efi/loader/loader.conf
+[root@archlinux ~]# echo 'secure-boot-enroll force' | tee -a /efi/loader/loader.conf
 [root@archlinux ~]# reboot
 
 
